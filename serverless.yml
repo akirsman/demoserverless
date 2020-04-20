@@ -1,0 +1,249 @@
+service: demoserverless
+provider:
+  name: aws
+  runtime: nodejs12.x
+functions:
+  hello:
+    handler: handler.hello
+  lambdahandler:
+    handler: handler.handler
+    role: lambdarole
+plugins:
+  - serverless-s3-sync
+custom:
+  s3Sync:
+    - bucketName: demoserverlessak001
+      localDir: website
+      #acl: public-read
+resources:
+  Resources:
+    sitebucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: demoserverlessak001
+        WebsiteConfiguration:
+          IndexDocument: index.html
+    sitebucketpolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket: !Ref sitebucket
+        PolicyDocument:
+          Statement:
+            - Effect: "Allow"
+              Action:
+                - "s3:GetObject"
+              Principal: "*"
+              Resource:
+                Fn::Join:
+                  - ""
+                  - - "arn:aws:s3:::"
+                    - Ref: sitebucket
+                    - "/*"
+              Condition:
+                IpAddress:
+                  aws:SourceIp:
+                    - "177.72.0.0/16"
+                    - "72.21.0.0/16"
+                    - "186.23.0.0/16"
+    cognitouserpool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        UserPoolName: demoserverless
+        AutoVerifiedAttributes:
+          - email
+        EmailConfiguration:
+          EmailSendingAccount: COGNITO_DEFAULT
+    cognitoclient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        UserPoolId: !Ref cognitouserpool
+        ClientName: "demoserverlesswebapp"
+        GenerateSecret: false
+    dynamodbtable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: Rides
+        AttributeDefinitions:
+          - AttributeName: RideId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: RideId
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+    lambdarole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: demoserverless-lambdarole
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+              Action: sts:AssumeRole
+        Policies:
+          - PolicyName: DynamoDBWriteAccess
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - logs:CreateLogGroup
+                    - logs:CreateLogStream
+                    - logs:PutLogEvents
+                  Resource:
+                    - "Fn::Join":
+                        - ":"
+                        - - "arn:aws:logs"
+                          - Ref: "AWS::Region"
+                          - Ref: "AWS::AccountId"
+                          - "log-group:/aws/lambda/*:*:*"
+                - Effect: Allow
+                  Action:
+                    - dynamodb:PutItem
+                  Resource:
+                    "Fn::GetAtt": [dynamodbtable, Arn]
+    apigatewayrestapi:
+      Type: AWS::ApiGateway::RestApi
+      Properties:
+        Name: demoserverlessapi
+        EndpointConfiguration:
+          Types:
+            - REGIONAL
+    apigatewayauthorizer:
+      Type: AWS::ApiGateway::Authorizer
+      Properties:
+        Name: demoserverlessapiauthorizer
+        RestApiId:
+          Ref: apigatewayrestapi
+        Type: COGNITO_USER_POOLS
+        ProviderARNs:
+          - Fn::GetAtt: [cognitouserpool, Arn]
+        IdentitySource: method.request.header.Authorization
+    apigatewayresource:
+      Type: AWS::ApiGateway::Resource
+      Properties:
+        ParentId:
+          Fn::GetAtt: [apigatewayrestapi, RootResourceId]
+        PathPart: ride
+        RestApiId:
+          Ref: apigatewayrestapi
+    optionsmethod:
+      Type: AWS::ApiGateway::Method
+      Properties:
+        AuthorizationType: NONE
+        RestApiId:
+          Ref: apigatewayrestapi
+        ResourceId:
+          Ref: apigatewayresource
+        HttpMethod: OPTIONS
+        Integration:
+          Type: MOCK
+          IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Methods: "'POST,OPTIONS'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+            ResponseTemplates:
+              application/json: ""
+          PassthroughBehavior: WHEN_NO_MATCH
+          RequestTemplates:
+            application/json: '{"statusCode": 200}'
+        MethodResponses:
+        - StatusCode: 200
+          ResponseModels:
+            application/json: 'Empty'
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: false
+            method.response.header.Access-Control-Allow-Methods: false
+            method.response.header.Access-Control-Allow-Origin: false
+    postmethod:
+      Type: AWS::ApiGateway::Method
+      DependsOn:
+        - lambdapermission
+      Properties:
+        AuthorizerId:
+          Ref: apigatewayauthorizer
+        AuthorizationType: COGNITO_USER_POOLS
+        HttpMethod: POST
+        ResourceId:
+          Ref: apigatewayresource
+        RestApiId:
+          Ref: apigatewayrestapi
+        Integration:
+          Type: AWS_PROXY
+          IntegrationHttpMethod: POST
+          Uri:
+            Fn::Join:
+              - ":"
+              - - "arn:aws:apigateway"
+                - Ref: "AWS::Region"
+                - "lambda"
+                - Fn::Join:
+                    - "/"
+                    - - "path"
+                      - "2015-03-31"
+                      - "functions"
+                      - Fn::GetAtt: [LambdahandlerLambdaFunction, Arn]
+                      - "invocations"
+    lambdapermission:
+      Type: AWS::Lambda::Permission
+      Properties:
+        Action: lambda:invokeFunction
+        FunctionName:
+          Fn::GetAtt:
+            - LambdahandlerLambdaFunction
+            - Arn
+        Principal: apigateway.amazonaws.com
+        SourceArn:
+          Fn::Join:
+            - ""
+            - - "arn:aws:execute-api:"
+              - Ref: AWS::Region
+              - ":"
+              - Ref: AWS::AccountId
+              - ":"
+              - Ref: apigatewayrestapi
+              - "/*"
+    apigatewaydeployment:
+      Type: AWS::ApiGateway::Deployment
+      DependsOn:
+        - optionsmethod
+        - postmethod
+      Properties:
+        Description: demoserverless api deployment
+        RestApiId:
+          Ref: apigatewayrestapi
+        StageName: "dev"
+  Outputs:
+    SiteUrl:
+      Description: "Site URL"
+      Value:
+        "Fn::GetAtt": [sitebucket, WebsiteURL]
+    CognitoUserPoolId:
+      Description: "Cognito User Pool ID"
+      Value:
+        Ref: "cognitouserpool"
+    CognitoUserPoolClientId:
+      Description: "Cognito User Pool Client ID"
+      Value:
+        Ref: "cognitoclient"
+    DynamodbtableARN:
+      Description: "DynamoDB ARN"
+      Value:
+        "Fn::GetAtt": [dynamodbtable, Arn]
+    ApiGatewayUrl:
+      Description: "Api Gateway URL"
+      Value:
+        "Fn::Join":
+          - ""
+          - - "https://"
+            - Ref: "apigatewayrestapi"
+            - ".execute-api."
+            - Ref: "AWS::Region"
+            - ".amazonaws.com"
+            - "/dev"

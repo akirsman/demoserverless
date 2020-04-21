@@ -3,10 +3,11 @@ provider:
   name: aws
   runtime: nodejs12.x
 functions:
-  hello:
-    handler: handler.hello
-  lambdahandler:
-    handler: handler.handler
+  lambdaputhandler:
+    handler: lambdaPut.handler
+    role: lambdarole
+  lambdagethandler:
+    handler: lambdaPut.handler
     role: lambdarole
 plugins:
   - serverless-s3-sync
@@ -62,12 +63,12 @@ resources:
     dynamodbtable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: Rides
+        TableName: Items
         AttributeDefinitions:
-          - AttributeName: RideId
+          - AttributeName: Id
             AttributeType: S
         KeySchema:
-          - AttributeName: RideId
+          - AttributeName: Id
             KeyType: HASH
         ProvisionedThroughput:
           ReadCapacityUnits: 5
@@ -188,7 +189,36 @@ resources:
                     - - "path"
                       - "2015-03-31"
                       - "functions"
-                      - Fn::GetAtt: [LambdahandlerLambdaFunction, Arn]
+                      - Fn::GetAtt: [LambdaputhandlerLambdaFunction, Arn]
+                      - "invocations"
+    getmethod:
+      Type: AWS::ApiGateway::Method
+      DependsOn:
+        - lambdapermission
+      Properties:
+        AuthorizerId:
+          Ref: apigatewayauthorizer
+        AuthorizationType: COGNITO_USER_POOLS
+        HttpMethod: GET
+        ResourceId:
+          Ref: apigatewayresource
+        RestApiId:
+          Ref: apigatewayrestapi
+        Integration:
+          Type: AWS_PROXY
+          IntegrationHttpMethod: GET
+          Uri:
+            Fn::Join:
+              - ":"
+              - - "arn:aws:apigateway"
+                - Ref: "AWS::Region"
+                - "lambda"
+                - Fn::Join:
+                    - "/"
+                    - - "path"
+                      - "2015-03-31"
+                      - "functions"
+                      - Fn::GetAtt: [LambdagethandlerLambdaFunction, Arn]
                       - "invocations"
     lambdapermission:
       Type: AWS::Lambda::Permission
@@ -196,7 +226,7 @@ resources:
         Action: lambda:invokeFunction
         FunctionName:
           Fn::GetAtt:
-            - LambdahandlerLambdaFunction
+            - LambdaputhandlerLambdaFunction
             - Arn
         Principal: apigateway.amazonaws.com
         SourceArn:

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+    <title>Minimal serverless framework Cognito flow</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Serverless web application example">
+    <meta name="author" content="">
+</head>
+
+<body>
+    <div class="info panel panel-default">
+        <div class="panel-heading">
+            <input type="text" id="someInput" name="someInput" />
+            <button id="request" onclick="callAPI(document.getElementById('someInput').value);">Post it</button>
+        </div>
+    </div>
+    <div id="itemsContainer">
+    </div>
+    <script src="js/vendor/jquery-3.1.0.js"></script>
+    <script src="js/vendor/aws-cognito-sdk.min.js"></script>
+    <script src="js/vendor/amazon-cognito-identity.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/cognito-auth.js"></script>
+    <script src="js/items.js"></script>
+</body>
+
+</html>

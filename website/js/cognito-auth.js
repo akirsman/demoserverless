@@ -15,7 +15,7 @@ var WildRydes = window.WildRydes || {};
     if (!(_config.cognito.userPoolId &&
           _config.cognito.userPoolClientId &&
           _config.cognito.region)) {
-        $('#noCognitoMessage').show();
+        alert('No Cognito User Pool Configured');
         return;
     }
 
@@ -117,7 +117,7 @@ var WildRydes = window.WildRydes || {};
         signin(email, password,
             function signinSuccess() {
                 console.log('Successfully Logged In');
-                window.location.href = 'ride.html';
+                window.location.href = 'items.html';
             },
             function signinError(err) {
                 alert(err);

@@ -40,10 +40,6 @@ function callPostAPI(text) {
                 Text: text
             }),
             success: function onRequestSuccess(result) {
-                var data = JSON.parse(result);
-                data.Items.forEach((item) => {
-                    $("#itemsContainer").append("<div><p>" + item.Time.S + "</p><p>" + item.Text.S + "</p></div>");
-                });
                 console.log('Request succedeed' + result);
             },
             error: function ajaxError(jqXHR, textStatus, errorThrown) {
@@ -66,7 +62,9 @@ function callGetAPI() {
                 'Content-Type': 'application/json'
             },
             success: function onRequestSuccess(result) {
-                alert(result);
+                result.Items.forEach((i) => {
+                    $("#itemsContainer").append("<div><p>" + i.Time.S + "</p><p>" + i.Text.S + "</p></div>");
+                });
             },
             error: function ajaxError(jqXHR, textStatus, errorThrown) {
                 console.error('Response: ', jqXHR.responseText);

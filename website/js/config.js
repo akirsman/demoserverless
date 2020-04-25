@@ -1,3 +1,4 @@
+// https://forums.aws.amazon.com/message.jspa?messageID=757990#757990
 window._config = {
     cognito: {
         userPoolId: 'us-east-1_nAWcMatR6', // e.g. us-east-2_uXboG5pAb

@@ -158,7 +158,6 @@ var WildRydes = window.WildRydes || {};
             function verifySuccess(result) {
                 console.log('call result: ' + result);
                 console.log('Successfully verified');
-                alert('Verification successful. You will now be redirected to the login page.');
                 window.location.href = signinUrl;
             },
             function verifyError(err) {

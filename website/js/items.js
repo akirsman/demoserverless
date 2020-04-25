@@ -30,7 +30,7 @@ function callPostAPI(text) {
         var authToken = token;
         $.ajax({
             method: 'POST',
-            url: _config.api.invokeUrl + '/ride',
+            url: _config.api.invokeUrl + '/item',
             headers: {
                 'Authorization': authToken,
                 'Accept': 'application/json',
@@ -56,7 +56,7 @@ function callGetAPI() {
         var authToken = token;
         $.ajax({
             method: 'GET',
-            url: _config.api.invokeUrl + '/ride',
+            url: _config.api.invokeUrl + '/item',
             headers: {
                 'Authorization': authToken,
                 'Accept': 'application/json',

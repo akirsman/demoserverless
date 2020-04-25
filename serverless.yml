@@ -134,7 +134,7 @@ resources:
       Properties:
         ParentId:
           Fn::GetAtt: [apigatewayrestapi, RootResourceId]
-        PathPart: ride
+        PathPart: item
         RestApiId:
           Ref: apigatewayrestapi
     optionsmethod:

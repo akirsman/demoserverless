@@ -41,6 +41,7 @@ function callPostAPI(text) {
             }),
             success: function onRequestSuccess(result) {
                 console.log('Request succedeed' + result);
+                callGetAPI();
             },
             error: function ajaxError(jqXHR, textStatus, errorThrown) {
                 console.error('Response: ', jqXHR.responseText);
@@ -62,8 +63,9 @@ function callGetAPI() {
                 'Content-Type': 'application/json'
             },
             success: function onRequestSuccess(result) {
+                $("#items").empty();
                 result.Items.forEach((i) => {
-                    $("#itemsContainer").append("<div><p>" + i.Time.S + "</p><p>" + i.Text.S + "</p></div>");
+                    $("#items").append("<div class='row'><div class='six columns'><p>" + i.Time.S + "</p></div><div class='six columns'><p>" + i.Text.S + "</p></div></div>");
                 });
             },
             error: function ajaxError(jqXHR, textStatus, errorThrown) {

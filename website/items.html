@@ -10,16 +10,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Serverless web application example">
     <meta name="author" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="//fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/skeleton.css">
 </head>
 
 <body>
-    <div class="info panel panel-default">
-        <div class="panel-heading">
-            <input type="text" id="someInput" name="someInput" />
-            <button id="request" onclick="callPostAPI(document.getElementById('someInput').value);">Post it</button>
+    <div class="container">
+        <div class="row">
+            <div class="six columns"><input type="text" id="someInput" name="someInput" /></div>
+            <div class="six columns"><button id="request"
+                    onclick="callPostAPI(document.getElementById('someInput').value);">Post it</button></div>
         </div>
     </div>
-    <div id="itemsContainer">
+    <div class="container" id="items">
     </div>
     <script src="js/vendor/jquery-3.1.0.js"></script>
     <script src="js/vendor/aws-cognito-sdk.min.js"></script>

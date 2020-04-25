@@ -12,20 +12,29 @@
     <title></title>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width">
-    <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="//fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/skeleton.css">
 </head>
+
 <body>
     <!--[if lt IE 7]>
             <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
         <![endif]-->
-    <section class="form-wrap">
-        <h1>Register</h1>
-        <form id="registrationForm">
-            <input type="email" id="emailInputRegister" placeholder="Email" pattern=".*" required>
-            <input type="password" id="passwordInputRegister" placeholder="Password" pattern=".*" required>
-            <input type="password" id="password2InputRegister" placeholder="Confirm Password" pattern=".*" required>
-            <input type="submit" value="Register">
-        </form>
+    <form id="registrationForm">
+        <div class="container">
+            <div class="row">
+                <div class="three columns"><input type="email" id="emailInputRegister" placeholder="Email" pattern=".*"
+                        required></div>
+                <div class="three columns"><input type="password" id="passwordInputRegister" placeholder="Password"
+                        pattern=".*" required></div>
+                <div class="three columns"><input type="password" id="password2InputRegister"
+                        placeholder="Confirm Password" pattern=".*" required></div>
+                <div class="three columns"><input type="submit" value="Register"></div>
+            </div>
+        </div>
+    </form>
     </section>
     <script src="js/vendor/jquery-3.1.0.js"></script>
     <script src="js/vendor/aws-cognito-sdk.min.js"></script>
@@ -33,4 +42,5 @@
     <script src="js/config.js"></script>
     <script src="js/cognito-auth.js"></script>
 </body>
+
 </html>

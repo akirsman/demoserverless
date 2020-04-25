@@ -1,5 +1,5 @@
 const AWS = require('aws-sdk');
-const ddb = new AWS.DynamoDB.DocumentClient();
+const dynamoDbClient = new AWS.DynamoDB();
 
 exports.handler = (event, context, callback) => {
     if (!event.requestContext.authorizer) {
@@ -7,33 +7,26 @@ exports.handler = (event, context, callback) => {
         return;
     }
     const username = event.requestContext.authorizer.claims['cognito:username'];
-    getItems(username).then(() => {
-        callback(null, {
-            statusCode: 201,
-            body: JSON.stringify({}),
-            headers: {
-                "Access-Control-Allow-Origin": "*",
-                'Access-Control-Allow-Methods': 'OPTIONS,POST,GET',
-                'Access-Control-Allow-Headers': 'Origin,Content-Type,Accept'
-            },
-        });
-    }).catch((err) => {
-        console.error(err);
-        errorResponse(err.message, context.awsRequestId, callback)
+    const queryInput = createQuery(username);
+    console.log("query:'" + queryInput + "' username:'" + username + "'");
+    dynamoDbClient.query(queryInput, function (err, data) {
+        if (err) {
+            errorResponse(err.message, context.awsRequestId, callback);
+        } else {
+            var datastr = JSON.stringify(data);
+            console.log("Query results: " + datastr);
+            callback(null, {
+                statusCode: 200,
+                body: datastr,
+                headers: {
+                    "Access-Control-Allow-Origin": "*",
+                    'Access-Control-Allow-Methods': 'OPTIONS,POST,GET',
+                    'Access-Control-Allow-Headers': 'Origin,Content-Type,Accept'
+                },
+            });
+        }
     });
 };
-
-function getItems(username) {
-    return ddb.getItems({
-        TableName: 'Items',
-        Item: {
-            Id: Math.random().toString(36).substring(2) + (new Date()).getTime().toString(36),
-            User: username,
-            Text: text,
-            Time: new Date().toISOString()
-        },
-    }).promise();
-}
 
 function errorResponse(errorMessage, awsRequestId, callback) {
     callback(null, {
@@ -46,4 +39,24 @@ function errorResponse(errorMessage, awsRequestId, callback) {
             'Access-Control-Allow-Origin': '*',
         },
     });
+}
+
+function createQuery(username) {
+    return {
+        "TableName": "Items",
+        "ScanIndexForward": false,
+        "ConsistentRead": false,
+        "KeyConditionExpression": "#10a92 = :10a92",
+        "ProjectionExpression": "#10a90,#10a91",
+        "ExpressionAttributeValues": {
+            ":10a92": {
+                "S": username
+            }
+        },
+        "ExpressionAttributeNames": {
+            "#10a90": "Time",
+            "#10a91": "Text",
+            "#10a92": "User"
+        }
+    }
 }

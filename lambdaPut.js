@@ -28,7 +28,7 @@ function insertItem(username, text) {
     return ddb.put({
         TableName: 'Items',
         Item: {
-            Id: Math.random().toString(36).substring(2) + Date.now().toString(36),
+            // Id: Math.random().toString(36).substring(2) + Date.now().toString(36),
             User: username,
             Text: text,
             Time: new Date().toISOString()

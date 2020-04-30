@@ -13,7 +13,7 @@ plugins:
   - serverless-s3-sync
 custom:
   s3Sync:
-    - bucketName: demoserverlessak001
+    - bucketName: demoserverlessabc123
       localDir: website
       #acl: public-read
 resources:
@@ -21,7 +21,7 @@ resources:
     sitebucket:
       Type: AWS::S3::Bucket
       Properties:
-        BucketName: demoserverlessak001
+        BucketName: demoserverlessabc123
         WebsiteConfiguration:
           IndexDocument: index.html
     sitebucketpolicy:

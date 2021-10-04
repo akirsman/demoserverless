@@ -7,10 +7,12 @@ UI is based on Skeleton.
 
 Deployment:
 
-1) set some sitebucket's BucketName and s3sync's bucketName in serverless.yml to some unique URL of your choice
-2) serverless deploy
-3) serverless info --verbose
-4) fill website/js/config.js with appropriate data
-5) serverless deploy
+1) clone this project
+2) install this plugin: _npm i serverless-s3-sync_
+3) set sitebucket's BucketName and s3sync's bucketName in serverless.yml to some unique URL of your choice
+4) _serverless deploy_
+5) _serverless info --verbose_
+6) fill website/js/config.js with appropriate data
+7) _serverless deploy_
 
 Then navigate to the bucket web hosting URL, register, signin etc.
